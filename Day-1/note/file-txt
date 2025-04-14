@@ -1,0 +1,119 @@
+1. Déclaration de variables : let vs const
+
+    let : permet de déclarer une variable modifiable.
+
+    const : déclare une constante (valeur non réaffectable), mais les objets et tableaux restent mutables.
+let age = 25;
+age = 30; // OK
+
+const nom = "Orline";
+// nom = "Autre"; ❌ Erreur
+
+const arr = [1, 2, 3];
+arr.push(4); // OK - contenu modifiable
+console.log(arr); // [1, 2, 3, 4]
+
+2. Méthodes de tableau : push() et pop()
+
+    push() ➜ ajoute un élément à la fin du tableau.
+
+    pop() ➜ supprime le dernier élément du tableau.
+const tableau = [1, 2, 3];
+tableau.push(4);        // ➜ [1, 2, 3, 4]
+tableau.pop();          // ➜ [1, 2, 3]
+On peut modifier le contenu d'un tableau ou objet déclaré en const.
+
+3. Déclaration d’objet
+
+Un objet est une collection de paires clé: valeur.
+const obj = {
+  instance1: "valeur1",
+  instance2: "valeur2"
+};
+
+4. Tableaux à deux dimensions
+
+On peut imbriquer des tableaux ou objets dans des tableaux :
+const tableau = [
+  [1, 2, 3], // tableau imbriqué
+  { abx: "acv" } // objet imbriqué
+];
+
+5. Boucles for
+Ex. 1 – Afficher de 0 à 10 :
+for (let i = 0; i < 11; i++) {
+  console.log(i);
+}
+
+Ex. 2 – Afficher les lettres d’un mot :
+const nom = "orline";
+for (let i = 0; i < nom.length; i++) {
+  console.log(nom[i]);
+}
+
+6. Conditions if/else
+let a = 8;
+
+if (a > 5) {
+  console.log("Positive");
+} else if (a > 0 && a <= 5) {
+  console.log("See you soon");
+} else {
+  console.log("Fail!");
+}
+
+7. Fonctions & Template Literals
+Déclaration classique :
+function direBonjour(nom) {
+  return `Bonjour ${nom}`;
+}
+Template string (backticks ``):
+const name = "orline";
+console.log(`Hello ${name}`); // Hello orline
+ 8. Destructuration d'objet
+Permet d’extraire les propriétés dans des variables facilement :
+const person = {
+  last_name: "Njeuhou",
+  first_name: "Orline",
+  age: 15
+};
+
+const { last_name, first_name, age } = person;
+console.log(last_name, first_name, age);
+
+9. Opérateur ... (rest & spread)
+Fonction avec arguments illimités :
+function sum(...numbers) {
+  return numbers.reduce((total, num) => total + num, 0);
+}
+
+console.log(sum(1, 2, 3, 4)); // 10
+
+10. Modules ES6 : export / import
+Export :
+// math.js
+export const sum = (a, b) => a + b;
+
+Import :
+// autreFichier.js
+import { sum } from "./math.js";
+
+console.log(sum(2, 3)); // 5
+
+
+
+
+
+Résumé global :
+Élément         	Description courte
+let             	Variable modifiable
+const           	Constante (mais contenu modifiable pour tableau/objet)
+push()          	Ajoute à la fin d’un tableau
+pop()           	Supprime le dernier élément d’un tableau
+for             	Boucle itérative
+if/else         	Conditionnelles
+function        	Crée une fonction
+template        	Interpolation avec ${} et backticks ``
+destructuring   	Extraction d’objet en variables
+... (rest/spread)	Prend plusieurs valeurs (rest) ou les duplique (spread)
+import/export   	Partage de fonctions entre fichiers
