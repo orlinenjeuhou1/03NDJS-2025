@@ -1,0 +1,128 @@
+Récupération des données en Node.js
+
+
+1. Utilisation de fs.readFile() (approche basée sur les callbacks) :
+
+La fonction fs.readFile() de Node.js permet de lire le contenu d'un fichier de manière asynchrone. Lors de l'appel de cette fonction, on passe un chemin de fichier, un encodage, et une fonction de rappel (callback) qui sera appelée une fois le fichier lu.
+
+Exemple de code avec callback :
+
+const fs = require("fs");
+
+fs.readFile("file.txt", "utf8", (err, data) => {
+  if (err) {
+    console.error("Error:", err);
+    return;
+  }
+  console.log("File content:", data);
+});
+
+Cependant, cette méthode peut entraîner des problèmes de callback hell lorsque plusieurs callbacks imbriqués sont utilisés pour gérer des tâches asynchrones, rendant le code difficile à lire et à maintenir.
+
+2. Utilisation des Promesses (Promises) :
+
+Les promises permettent de mieux gérer le code asynchrone en représentant un résultat futur d'une opération (qui peut réussir ou échouer). Elles offrent une syntaxe plus lisible par rapport aux callbacks imbriqués.
+
+Exemple avec promise :
+
+const fs = require("fs").promises;
+
+fs.readFile("file.txt", "utf8")
+  .then((data) => {
+    console.log("Content:", data);
+  })
+  .catch((error) => {
+    console.log("Error:", error);
+  });
+
+    then() est utilisé pour gérer le succès.
+
+    catch() est utilisé pour gérer l'échec (lorsqu'une erreur se produit).
+
+
+3. Utilisation de async/await :
+
+Async/await permet de rendre le code asynchrone plus lisible, en utilisant une syntaxe qui ressemble à du code synchrone tout en restant non-bloquante. Cela permet de travailler avec des promesses de manière plus intuitive.
+
+Exemple avec async/await :
+
+const fs = require("fs").promises;
+
+async function readFileContent() {
+  try {
+    const content = await fs.readFile("file.txt", "utf-8");
+    console.log("Content:", content);
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
+
+readFileContent();
+
+    La fonction marquée avec async permet l'utilisation de await, qui attend que la promesse se résolve avant de continuer l'exécution du code.
+
+    L'utilisation de try/catch permet de gérer les erreurs de manière élégante.
+
+Cheerio : Manipulation de HTML côté serveur
+
+Cheerio est une bibliothèque JavaScript légère qui permet de manipuler et d'extraire des données de documents HTML de manière très similaire à jQuery, mais côté serveur, dans un environnement Node.js. Elle est couramment utilisée pour le web scraping.
+
+
+Voici un exemple de base d’utilisation de cheerio pour extraire des données d’une page HTML :
+
+const cheerio = require("cheerio");
+const axios = require("axios");
+
+axios.get('https://example.com').then(response => {
+  const $ = cheerio.load(response.data);  // Charger le HTML
+  const title = $('h1').text();  // Extraire le texte du premier <h1>
+  console.log(title);
+});
+
+Dans cet exemple, cheerio permet de charger la page HTML récupérée via axios et d'extraire facilement le contenu d’un élément HTML (ici, le premier h1).
+Conclusion
+
+    Callback Hell : Peut se produire lors de l’utilisation de fonctions asynchrones avec des callbacks imbriqués. Cela rend le code difficile à maintenir et à lire.
+
+    Promises : Fournissent un meilleur moyen de gérer les opérations asynchrones en permettant de chaîner des actions successives avec then() et catch().
+
+    Async/Await : Permet de rendre le code asynchrone plus lisible, en le faisant ressembler à un code synchrone tout en restant asynchrone.
+
+    Cheerio : Une bibliothèque utile pour manipuler des documents HTML côté serveur, souvent utilisée pour le web scraping.
+
+Ces différentes techniques permettent de rendre le développement avec Node.js plus fluide et de mieux gérer les opérations asynchrones.
+
+Si vous souhaitez utiliser cheerio sans axios pour manipuler des documents HTML en Node.js, vous pouvez lire directement un fichier HTML local à l'aide du module fs (système de fichiers de Node.js). Voici un exemple de code qui montre comment charger et manipuler un fichier HTML local avec cheerio :
+Exemple sans axios (utilisation de fs pour lire un fichier HTML local) :
+
+    Installer les modules nécessaires (si ce n’est pas déjà fait) :
+
+npm install cheerio
+
+Exemple de code pour lire un fichier HTML local avec fs et utiliser cheerio :
+
+    const fs = require('fs');
+    const cheerio = require('cheerio');
+
+    // Lire le fichier HTML local
+    fs.readFile('path/to/your/file.html', 'utf-8', (err, data) => {
+      if (err) {
+        console.error("Erreur lors de la lecture du fichier:", err);
+        return;
+      }
+
+      // Charger le contenu HTML avec Cheerio
+      const $ = cheerio.load(data);
+
+      // Extraire des données (par exemple, le contenu du premier <h1>)
+      const title = $('h1').text();
+      console.log("Titre extrait du <h1>:", title);
+    });
+
+Explication :
+
+    fs.readFile() : Utilisé pour lire un fichier HTML local de manière asynchrone. Vous devez spécifier le chemin d'accès du fichier HTML à lire.
+
+    cheerio.load(data) : Charge le contenu HTML récupéré (ici, du fichier local) pour le manipuler et en extraire des éléments.
+
+    $('h1').text() : Utilise la syntaxe de jQuery pour extraire le texte du premier élément <h1> de la page HTML.
