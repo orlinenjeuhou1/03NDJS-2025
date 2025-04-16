@@ -1,0 +1,176 @@
+NOTE COURS 3 PLUS :
+1. CRÉATION DU SERVEUR EXPRESS
+Étapes initiales du projet
+mkdir express-serveur         # Crée un dossier projet
+cd express-serveur            # Entre dans le dossier
+npm init -y                   # Initialise un projet Node.js
+npm install express mongoose  # Installe Express et Mongoose
+npm install bcrypt jsonwebtoken dotenv  # Installe bcrypt (hash), JWT (tokens) et dotenv (.env)
+ 2. CONFIGURATION DE MONGODB
+Créer le fichier connectDB.js dans le dossier db : // db/connectDB.js
+// Importer mongoose
+import mongoose from "mongoose";
+// Fonction pour se connecter a MongoDB
+const connectDB = () => {
+// Utiliser mongoose pour connecter a la base de donnees locale (remplacer <db_name> par le nom reel)
+mongoose
+.connect("mongodb://localhost:27017/<db_name>")
+.then(() => console.log("Connected to MongoDB")) // En cas de succes
+.catch((err) => console.error("Connection error:", err)); // En cas derreur
+};
+export default connectDB; // Exporter la fonction de connexionexport default connectDB;
+ 3. CRÉATION DU MODÈLE USER
+Créer le fichier User.js dans le dossier models : // models/User.js
+
+// Importer Schema et model de mongoose
+import { Schema, model } from "mongoose";
+// Definir le schema de lutilisateur
+const userSchema = new Schema({
+email: {
+type: String,
+required: true, // le champ est obligatoire
+unique: true, // pas deux utilisateurs avec le meme email
+},
+password: String, // mot de passe hashe
+isAdmin: {
+type: Boolean,
+default: false, // par defaut, un utilisateur nest pas admin
+},
+created_at: {
+type: Date,
+default: Date.now, // date d’enregistrement automatique
+},
+});
+// Creer le modele User base sur le schema
+const User = model("User", userSchema);
+export default User; // Exporter le modele
+4. ROUTES D’AUTHENTIFICATION
+Créer le fichier auth.js dans le dossier routes : // routes/auth.js
+// Importer express et les fonctions du controleur
+import express from "express";
+import { register, login } from "../controllers/auth.js";
+// Creer un routeur Express
+const router = express.Router();
+// Route pour l'inscription
+router.post("/register", register);
+// Route pour la connexion
+router.post("/login", login);
+export default router; // Exporter le routeur
+5. CONTRÔLEURS (logique métier)
+Créer le fichier auth.js dans le dossier controllers :
+// Importer les modules necessaires
+import bcrypt from "bcrypt"; // pour hasher les mots de passe
+import jwt from "jsonwebtoken"; // pour creer des tokens JWT
+import User from "../models/User.js";
+import dotenv from "dotenv";
+dotenv.config(); // Charger les variables .env
+// Fonction inscription
+export async function register(req, res) {
+const { email, password, isAdmin } = req.body; // Extraire les donnees envoyees
+try {
+const userExist = await User.findOne({ email }); // Verifie si lutilisateur existe deja
+if (userExist) {
+return res.status(409).json({ error: "User already exists" }); // erreur si oui
+}
+const hashedPassword = await bcrypt.hash(password, 10); // hash du mot de passe
+const newUser = await User.create({
+email,
+password: hashedPassword,
+isAdmin,
+});
+res.status(201).json({
+success: true,
+message: "User Registered",
+user: {
+email: newUser.email,
+isAdmin: newUser.isAdmin,
+},
+});
+} catch (err) {
+res.status(500).json({ error: "Registration Failed" }); // erreur serveur
+}
+  }
+// Fonction connexion
+export async function login(req, res) {
+const { email, password } = req.body; // Extraire les donnees
+try {
+const user = await User.findOne({ email }); // Recherche de lutilisateur
+if (!user) return res.status(401).json({ error: "Invalid email or password" });
+const isMatch = await bcrypt.compare(password, user.password); // Comparer les mots de passe
+if (!isMatch) return res.status(401).json({ error: "Invalid email or password" });
+const token = jwt.sign( // Creation du token JWT
+{ id: user._id, isAdmin: user.isAdmin },
+process.env.JWT_SECRET,
+{ expiresIn: "1h" }
+);
+res.status(200).json({
+success: true,
+message: "Login successful",
+token,
+user: {
+email: user.email,
+isAdmin: user.isAdmin,
+},
+});
+} catch (err) {
+res.status(500).json({ error: "Login Failed" }); // erreur serveur
+  }
+}
+6-MIDDLEWARE DE SÉCURITÉ
+Créer le fichier authMiddleware.js dans le dossier middleware
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config(); // Charger .env
+export function verifyToken(req, res, next) {
+const authHeader = req.headers.authorization; // Recupere le header
+if (!authHeader || !authHeader.startsWith("Bearer ")) {
+return res.status(401).json({ error: "Access denied" }); // si pas de token
+}
+const token = authHeader.split(" ")[1]; // recuperer le token
+try {
+const decoded = jwt.verify(token, process.env.JWT_SECRET); // verifier la validite du token
+req.user = decoded; // ajouter lutilisateur a req
+next(); // continuer
+} catch (err) {
+res.status(401).json({ error: "Invalid token" });
+}
+}
+7. SERVER PRINCIPAL
+Créer un fichier server.js  à la racine
+// Importer express, connectDB, routes, .env
+import express from "express";
+import connectDB from "./db/connectDB.js";
+import authRoutes from "./routes/auth.js";
+import dotenv from "dotenv";
+dotenv.config(); // Charger les variables denvironnement
+connectDB(); // Connexion a MongoDB
+const app = express(); // Initialiser express
+app.use(express.json()); // Middleware pour parser les requetes JSON
+app.use("/api/v1", authRoutes); // Definir les routes auth
+const port = process.env.PORT || 5000; // Port dynamique ou par defaut
+app.listen(port, () => {
+console.log(`Server running on port ${port}`); // Demarrage serveur
+});
+8. VARIABLES D’ENVIRONNEMENT
+.env
+PORT=5000
+JWT_SECRET=superSecretKey123
+⚠️ N’oublie pas de mettre .env dans ton .gitignore !
+9. TEST AVEC POSTMAN
+    POST http://localhost:5000/api/v1/register → body > raw > JSON
+{
+  "email": "test@example.com",
+  "password": "123456",
+  "isAdmin": true
+}
+    POST http://localhost:5000/api/v1/login → reçoit un token.
+    Pour routes sécurisées → ajouter Authorization: Bearer <token> dans Postman.
+10. ADMIN ACCESS
+Dans une route protégée, tu peux faire :
+if (req.user.isAdmin) {
+  // donner accès
+} else {
+  res.status(403).json({ error: "Access denied" });
+}
+
+
