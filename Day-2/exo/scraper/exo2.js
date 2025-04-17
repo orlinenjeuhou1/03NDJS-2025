@@ -1,12 +1,6 @@
 import * as cheerio from 'cheerio';
-import fs from 'fs';
 
-const filePath = './insee.html';
-
-const getDataFromLocalHtml = () => {
-  try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    const $ = cheerio.load(data);
+const $ = await cheerio.fromURL('https://example.com');
 
     const table = $('table').first();
     const rows = [];
