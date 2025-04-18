@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { authMiddleware } from "./authmiddleware2";
 
 const JWT_SECRET = process.env.JWT_SECRET || "votre_cle_secrete_jwt";
 
